@@ -30,11 +30,16 @@ public class LoginPage extends BasePage {
         driver.findElement(loginButton).click();
 
         // Valid credentials navigate to Products; invalid ones stay here with an error.
-        // Wait for whichever actually happens before handing back a ProductsPage.
+        // Wait for whichever actually happens, then only construct a ProductsPage if
+        // that's genuinely where we ended up - its constructor waits for a Products-page
+        // element, which would never appear (and time out) after a rejected login.
         wait.until(webDriver ->
                 !webDriver.findElements(By.className("inventory_list")).isEmpty()
                         || !webDriver.findElements(errorMessage).isEmpty());
 
+        if (isErrorDisplayed()) {
+            return null;
+        }
         return new ProductsPage(driver);
     }
 

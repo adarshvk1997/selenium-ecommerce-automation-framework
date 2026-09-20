@@ -9,9 +9,7 @@ import java.util.List;
 /**
  * Page object for the SauceDemo inventory/products page (/inventory.html).
  */
-public class ProductsPage {
-
-    private final WebDriver driver;
+public class ProductsPage extends BasePage {
 
     private final By pageTitle = By.className("title");
     private final By inventoryItems = By.className("inventory_item");
@@ -22,7 +20,8 @@ public class ProductsPage {
     private final By inventoryItemPrice = By.className("inventory_item_price");
 
     public ProductsPage(WebDriver driver) {
-        this.driver = driver;
+        super(driver);
+        waitUntilLoaded(pageTitle);
     }
 
     public boolean isLoaded() {

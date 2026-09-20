@@ -1,28 +1,18 @@
 package com.adarshvk.framework.pages;
 
-import com.adarshvk.framework.utils.ConfigReader;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 /**
  * Page object covering the SauceDemo checkout flow:
  * checkout-step-one.html (info) -> checkout-step-two.html (overview) -> checkout-complete.html
  *
  * Submitting the info form is async (this is a React app) - the page doesn't change
- * the instant "Continue" is clicked. Waiting only on implicit wait for elements to
- * *exist* isn't enough here, because right after the click there's a brief window where
- * we're still on checkout-step-one with none of step-two's elements present yet, and
- * none of step-one's elements gone yet either. An explicit wait for the actual outcome
- * (URL change, or the error message appearing) is what step-one's outcome actually is.
+ * the instant "Continue" is clicked. An explicit wait for the actual outcome (URL
+ * change, or the error message appearing) is used instead of assuming either one.
  */
-public class CheckoutPage {
-
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+public class CheckoutPage extends BasePage {
 
     private final By firstNameField = By.id("first-name");
     private final By lastNameField = By.id("last-name");
@@ -34,8 +24,8 @@ public class CheckoutPage {
     private final By totalLabel = By.className("summary_total_label");
 
     public CheckoutPage(WebDriver driver) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(ConfigReader.getInt("explicit.wait.seconds")));
+        super(driver);
+        waitUntilLoaded(firstNameField);
     }
 
     public CheckoutPage fillShippingInfo(String firstName, String lastName, String postalCode) {

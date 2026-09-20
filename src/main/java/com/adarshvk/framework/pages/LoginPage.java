@@ -7,9 +7,7 @@ import org.openqa.selenium.WebElement;
 /**
  * Page object for the SauceDemo login page (/).
  */
-public class LoginPage {
-
-    private final WebDriver driver;
+public class LoginPage extends BasePage {
 
     private final By usernameField = By.id("user-name");
     private final By passwordField = By.id("password");
@@ -17,7 +15,7 @@ public class LoginPage {
     private final By errorMessage = By.cssSelector("h3[data-test='error']");
 
     public LoginPage(WebDriver driver) {
-        this.driver = driver;
+        super(driver);
     }
 
     public ProductsPage loginAs(String username, String password) {
@@ -30,6 +28,13 @@ public class LoginPage {
         password_.sendKeys(password);
 
         driver.findElement(loginButton).click();
+
+        // Valid credentials navigate to Products; invalid ones stay here with an error.
+        // Wait for whichever actually happens before handing back a ProductsPage.
+        wait.until(webDriver ->
+                !webDriver.findElements(By.className("inventory_list")).isEmpty()
+                        || !webDriver.findElements(errorMessage).isEmpty());
+
         return new ProductsPage(driver);
     }
 

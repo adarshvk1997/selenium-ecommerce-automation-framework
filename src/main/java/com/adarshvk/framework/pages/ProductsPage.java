@@ -13,7 +13,10 @@ public class ProductsPage extends BasePage {
 
     private final By pageTitle = By.className("title");
     private final By inventoryItems = By.className("inventory_item");
-    private final By addToCartButtons = By.cssSelector("button.btn_inventory");
+    // Both "Add to cart" and "Remove" buttons share the btn_inventory class - btn_primary
+    // is what's specific to the not-yet-added state, so this only ever matches buttons
+    // this method actually wants to click.
+    private final By addToCartButtons = By.cssSelector("button.btn_inventory.btn_primary");
     private final By cartBadge = By.className("shopping_cart_badge");
     private final By cartLink = By.className("shopping_cart_link");
     private final By sortDropdown = By.className("product_sort_container");
@@ -33,9 +36,19 @@ public class ProductsPage extends BasePage {
     }
 
     public void addFirstNItemsToCart(int n) {
-        List<WebElement> buttons = driver.findElements(addToCartButtons);
-        for (int i = 0; i < n && i < buttons.size(); i++) {
-            buttons.get(i).click();
+        // Re-query before every click rather than capturing the list once: clicking
+        // "Add to cart" swaps that button to "Remove" (React re-renders it), which can
+        // invalidate WebElement references captured before the click. Confirming the
+        // cart badge after each click also means we never move on to the next item
+        // before this add has actually registered.
+        for (int added = 0; added < n; added++) {
+            List<WebElement> remaining = driver.findElements(addToCartButtons);
+            if (remaining.isEmpty()) {
+                break;
+            }
+            int expectedCount = added + 1;
+            remaining.get(0).click();
+            wait.until(webDriver -> getCartCount() == expectedCount);
         }
     }
 
